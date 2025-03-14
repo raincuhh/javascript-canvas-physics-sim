@@ -1,8 +1,9 @@
 import { createCircle, circleInstances, Circle } from "./circle";
 
-let maxInstances: number = 15;
+let maxInstances: number = 50;
 
 const circleRadius = 11;
+const minVelocity = 0.1;
 
 export const mainLoop = (deltaTime: number, ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement) => {
 	if (isNaN(deltaTime) || deltaTime <= 0) return;
@@ -57,6 +58,15 @@ const handleCollisions = (canvas: HTMLCanvasElement) => {
 			const a = circleInstances[i];
 			const b = circleInstances[j];
 
+			if (
+				Math.abs(a.velocityX) < 0.1 &&
+				Math.abs(a.velocityY) < 0.1 &&
+				Math.abs(b.velocityX) < 0.1 &&
+				Math.abs(b.velocityY) < 0.1
+			) {
+				continue;
+			}
+
 			const dx = b.x - a.x;
 			const dy = b.y - a.y;
 			const dist = Math.sqrt(dx * dx + dy * dy);
@@ -84,7 +94,7 @@ const handleCollisions = (canvas: HTMLCanvasElement) => {
 				const restitution = 1;
 				let impulse = -(1 + restitution) * velocityAlongNormal;
 
-				const maxImpulse = 100;
+				const maxImpulse = 10;
 				impulse = Math.min(impulse, maxImpulse);
 
 				a.velocityX -= impulse * normalX;
@@ -98,11 +108,20 @@ const handleCollisions = (canvas: HTMLCanvasElement) => {
 				b.velocityX *= friction;
 				b.velocityY *= friction;
 
-				const minVelocity = 0.1;
 				if (Math.abs(a.velocityX) < minVelocity) a.velocityX = 0;
 				if (Math.abs(a.velocityY) < minVelocity) a.velocityY = 0;
 				if (Math.abs(b.velocityX) < minVelocity) b.velocityX = 0;
 				if (Math.abs(b.velocityY) < minVelocity) b.velocityY = 0;
+			}
+		}
+	}
+
+	for (const circle of circleInstances) {
+		if (Math.abs(circle.velocityY) < minVelocity) {
+			circle.velocityY = 0;
+
+			if (circle.y + circle.radius >= canvas.height) {
+				circle.y = canvas.height - circle.radius;
 			}
 		}
 	}
