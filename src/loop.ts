@@ -1,6 +1,6 @@
 import { createCircle, circleInstances, Circle } from "./circle";
 
-let maxInstances: number = 50;
+let maxInstances: number = 100;
 
 const circleRadius = 11;
 const minVelocity = 0.1;
@@ -36,17 +36,27 @@ const updateDisplay = (circleInstances: Circle[]) => {
 
 const handleCollisions = (canvas: HTMLCanvasElement) => {
 	for (const circle of circleInstances) {
-		if (
-			circle.y + circle.velocityY > canvas.height - circleRadius ||
-			circle.y + circle.velocityY < circleRadius
-		) {
+		// floor
+		if (circle.y + circle.radius > canvas.height) {
+			circle.y = canvas.height - circle.radius;
+			circle.velocityY = -circle.velocityY * 0.8;
+		}
+
+		// ceiling
+		if (circle.y - circle.radius < 0) {
+			circle.y = circle.radius;
 			circle.velocityY = -circle.velocityY;
 		}
 
-		if (
-			circle.x + circle.velocityX > canvas.width - circleRadius ||
-			circle.x + circle.velocityX < circleRadius
-		) {
+		// left
+		if (circle.x + circle.radius > canvas.width) {
+			circle.x = canvas.width - circle.radius;
+			circle.velocityX = -circle.velocityX;
+		}
+
+		// right
+		if (circle.x - circle.radius < 0) {
+			circle.x = circle.radius;
 			circle.velocityX = -circle.velocityX;
 		}
 	}
@@ -91,10 +101,10 @@ const handleCollisions = (canvas: HTMLCanvasElement) => {
 
 				if (velocityAlongNormal > 0) continue;
 
-				const restitution = 1;
-				let impulse = -(1 + restitution) * velocityAlongNormal;
+				const restitution = 1.2;
+				let impulse = -(5 + restitution) * velocityAlongNormal;
 
-				const maxImpulse = 10;
+				const maxImpulse = 1;
 				impulse = Math.min(impulse, maxImpulse);
 
 				a.velocityX -= impulse * normalX;
@@ -102,7 +112,7 @@ const handleCollisions = (canvas: HTMLCanvasElement) => {
 				b.velocityX += impulse * normalX;
 				b.velocityY += impulse * normalY;
 
-				const friction = 0.98;
+				const friction = 0.68;
 				a.velocityX *= friction;
 				a.velocityY *= friction;
 				b.velocityX *= friction;
